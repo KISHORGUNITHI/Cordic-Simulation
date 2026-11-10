@@ -9,7 +9,39 @@ A complete, multiplier-free, cycle-accurate implementation of the **CORDIC (COor
 
 ---
 
-## 1. System Specifications
+## 1. Team Quickstart Guide (For Teammates & Reviewers)
+
+### Prerequisites (What to Install)
+| Tool | Required? | Why It's Needed |
+|---|---|---|
+| **Git** | **Yes** | To clone the repository |
+| **Python 3.8+** | **Yes** | Runs the automated test harness (`run_simulation.py`) |
+| **GCC / MinGW** | **Recommended** | Compiles the cycle-accurate simulator (`sim_cordic.c`) |
+| **Web Browser** | **Yes** | Chrome/Edge/Firefox to view waveforms (`view_waves.html`) & slides |
+| **Icarus Verilog + GTKWave** | *Optional* | Native Verilog simulation & desktop waveform viewing |
+
+### Step-by-Step Commands
+
+```bash
+# 1. Clone the project repository
+git clone https://github.com/KISHORGUNITHI/Cordic-Simulation.git
+cd Cordic-Simulation
+
+# 2. Run the simulation & verification suite
+python run_simulation.py
+# (or simply double-click run_all.bat on Windows)
+
+# 3. View the digital waveforms (interactive browser viewer, no software needed)
+# Windows PowerShell:
+Start-Process view_waves.html
+
+# 4. View the 14-slide academic presentation deck
+Start-Process presentation_slides.html
+```
+
+---
+
+## 2. System Specifications
 
 | Parameter | Value | Description |
 |---|---|---|
