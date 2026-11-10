@@ -1,0 +1,40 @@
+# Binaries and compiled executables
+*.exe
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.out
+*.vvp
+
+# Simulator working directories and logs
+sim/*.exe
+xsim.dir/
+.Xil/
+work/
+transcript
+vsim.wlf
+*.log
+*.jou
+*.pb
+*.wdb
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS and IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Environment and sensitive keys (safety fallback)
+.env
+.env.*
+*.pem
+*.key

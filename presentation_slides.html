@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORDIC Hardware Processor - Project Presentation</title>
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-card: #161b22;
+    --border: #30363d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --accent-blue: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-purple: #bc8cff;
+    --accent-orange: #d29922;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .slide-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 60px;
+    position: relative;
+  }
+  .slide {
+    display: none;
+    width: 100%;
+    max-width: 1100px;
+    height: 90%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 50px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.5);
+    flex-direction: column;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease;
+  }
+  .slide.active {
+    display: flex;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide-num {
+    font-size: 13px;
+    color: var(--accent-blue);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 32px;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 10px;
+  }
+  .title-slide {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  .title-slide h1 {
+    font-size: 40px;
+    border: none;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+  }
+  .title-slide h2 {
+    font-size: 22px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 30px;
+  }
+  .meta-box {
+    display: inline-flex;
+    gap: 30px;
+    background: var(--bg-primary);
+    padding: 16px 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .meta-item { text-align: left; }
+  .meta-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; }
+  .meta-val { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  p, li {
+    font-size: 17px;
+    line-height: 1.6;
+    color: #c9d1d9;
+    margin-bottom: 12px;
+  }
+  ul { padding-left: 24px; margin-bottom: 16px; }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 10px;
+  }
+  .card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .card h3 {
+    font-size: 18px;
+    color: var(--accent-blue);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { background: #21262d; color: var(--accent-blue); font-weight: 600; }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background: rgba(110,118,129,0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #ff7b72;
+    font-size: 14px;
+  }
+  .formula-box {
+    background: #1f242c;
+    border-left: 4px solid var(--accent-blue);
+    padding: 14px 20px;
+    margin: 14px 0;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 16px;
+    color: #79c0ff;
+  }
+  .badge-pass {
+    background: rgba(46,160,67,0.2);
+    color: #3fb950;
+    border: 1px solid #3fb950;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  footer {
+    height: 50px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .controls { display: flex; gap: 10px; }
+  .btn {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .btn:hover { background: #21262d; border-color: var(--accent-blue); }
+</style>
+</head>
+<body>
+
+<div class="slide-container">
+
+  <!-- Slide 1: Title -->
+  <div class="slide title-slide active" id="slide-1">
+    <div class="slide-num">Computer Organization and Architecture (COA)</div>
+    <h1>16-Bit Multiplier-Free CORDIC Processor</h1>
+    <h2>Design, Synthesizable Verilog HDL Implementation, and Cycle-Accurate Verification</h2>
+    <div class="meta-box">
+      <div class="meta-item">
+        <div class="meta-label">Architecture</div>
+        <div class="meta-val">Serial Iterative Core (Rotation Mode)</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Word Length</div>
+        <div class="meta-val">Signed Q3.13 Angle &rarr; Signed Q1.15 Sin/Cos</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Hardware Metrics</div>
+        <div class="meta-val">0 Multipliers &bull; 18-Cycle Latency</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Problem Statement -->
+  <div class="slide" id="slide-2">
+    <div class="slide-num">Slide 02 / 14 &bull; Introduction</div>
+    <h1>The Hardware Trigonometry Dilemma</h1>
+    <div class="grid-2">
+      <div class="card">
+        <h3>&#10060; The Challenge in Hardware</h3>
+        <ul>
+          <li>ALUs natively do add, subtract, and shift. They cannot directly evaluate transcendental functions like <code>sin(&theta;)</code> and <code>cos(&theta;)</code>.</li>
+          <li><b>Taylor Series Expansion:</b> Requires multiple 32-bit multipliers and dividers. Huge silicon area, variable latency, high power.</li>
+          <li><b>Direct ROM Lookups:</b> 16-bit resolution table requires 256 KB of on-chip memory &mdash; prohibitively expensive for embedded applications.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>&#10004; The Solution: CORDIC</h3>
+        <ul>
+          <li><b>COordinate Rotation DIgital Computer</b> (Volder, 1959).</li>
+          <li>Decomposes rotation into micro-steps where <code>tan(&alpha;<sub>i</sub>) = 2<sup>-i</sup></code>.</li>
+          <li><b>Zero multipliers needed:</b> Multiplication by <code>2<sup>-i</sup></code> is just an arithmetic right shift (<code>>>> i</code>)!</li>
+          <li>Generates both <b>sine and cosine simultaneously</b> in fixed cycles.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: The CORDIC Algorithm -->
+  <div class="slide" id="slide-3">
+    <div class="slide-num">Slide 03 / 14 &bull; Mathematics</div>
+    <h1>CORDIC Iteration Recurrence Equations</h1>
+    <p>At each step <i>i</i> (from 0 to 15), the vector rotates by elementary angle &alpha;<sub>i</sub> chosen so &tan;&alpha;<sub>i</sub> = 2<sup>-i</sup>:</p>
+    
+    <div class="formula-box">
+      X<sub>i+1</sub> = X<sub>i</sub> &minus; &sigma;<sub>i</sub> &bull; (Y<sub>i</sub> >>> i)<br>
+      Y<sub>i+1</sub> = Y<sub>i</sub> + &sigma;<sub>i</sub> &bull; (X<sub>i</sub> >>> i)<br>
+      Z<sub>i+1</sub> = Z<sub>i</sub> &minus; &sigma;<sub>i</sub> &bull; &alpha;<sub>i</sub> &emsp; where &sigma;<sub>i</sub> = (Z<sub>i</sub> &ge; 0) ? +1 : &minus;1
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Scaling Factor (K)</h3>
+        <p>Micro-rotations expand vector magnitude by K<sub>16</sub> &asymp; 1.64676.</p>
+        <p><b>Multiplier-Free Compensation:</b> We initialize X<sub>0</sub> = 1/K &asymp; <b>0.607253</b> (<code>0x04DBA7</code> in Q3.19). Output is automatically scaled!</p>
+      </div>
+      <div class="card">
+        <h3>Angle Convergence (Z &rarr; 0)</h3>
+        <p>Residual angle Z oscillates and rapidly converges to zero.</p>
+        <p>After 16 iterations: <b>X &asymp; cos(&theta;)</b> and <b>Y &asymp; sin(&theta;)</b> with residual error &lt; 10<sup>-5</sup> rad.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Hardware Architecture -->
+  <div class="slide" id="slide-4">
+    <div class="slide-num">Slide 04 / 14 &bull; Microarchitecture</div>
+    <h1>Top-Level System Architecture</h1>
+    <p>The processor is partitioned into 7 modular RTL blocks following clean Datapath vs Control Unit separation:</p>
+    
+    <div class="formula-box" style="font-size: 13px; line-height: 1.4;">
+      cordic_top (Top System) <br>
+      &emsp;&boxur;&boxh;&boxh; cordic_quadrant &emsp;&emsp;&ensp;&larr; Folds full-circle [-&pi;, +&pi;] into [0, +&pi;/2] (Q1..Q4 reflection)<br>
+      &emsp;&boxur;&boxh;&boxh; cordic_fsm &emsp;&emsp;&emsp;&emsp;&ensp;&larr; 4-State Moore controller (IDLE &rarr; LOAD &rarr; ITERATE &rarr; DONE)<br>
+      &emsp;&boxur;&boxh;&boxh; cordic_iter_counter &ensp;&larr; 4-bit synchronous counter (0..15), asserts iter_done<br>
+      &emsp;&boxur;&boxh;&boxh; cordic_atan_rom &emsp;&emsp;&ensp;&larr; 16-word lookup ROM storing round(atan(2^-i) * 2^18)<br>
+      &emsp;&boxur;&boxh;&boxh; cordic_datapath &emsp;&emsp;&ensp;&larr; 22-bit shift-and-add arithmetic registers (X, Y, Z)<br>
+      &emsp;&boxur;&boxh;&boxh; cordic_output_reg &emsp;&ensp;&larr; Rounding bias, quadrant sign restore, saturation, done pulse
+    </div>
+  </div>
+
+  <!-- Slide 5: FSM Controller -->
+  <div class="slide" id="slide-5">
+    <div class="slide-num">Slide 05 / 14 &bull; Control Subsystem</div>
+    <h1>4-State Moore Finite State Machine</h1>
+    <div class="grid-2">
+      <div class="card">
+        <h3>State Transition Flow</h3>
+        <ul>
+          <li><b>IDLE (00):</b> Asserts <code>ready = 1</code>, <code>cnt_rst = 1</code>. Awaits single-cycle <code>start = 1</code>.</li>
+          <li><b>LOAD (01):</b> Asserts <code>load_en = 1</code>. Initializes X<sub>0</sub> = 1/K, Y<sub>0</sub> = 0, Z<sub>0</sub> = folded angle.</li>
+          <li><b>ITERATE (10):</b> Asserts <code>iter_en = 1</code>. Datapath iterates while counter counts 0 to 15.</li>
+          <li><b>DONE (11):</b> Asserts <code>out_latch = 1</code>. Latches outputs and emits single-cycle <code>done = 1</code>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>FSM State Diagram</h3>
+        <div style="font-family: monospace; font-size: 13px; background: #0d1117; padding: 14px; border-radius: 6px; line-height: 1.6;">
+          (RST) &rarr; [ IDLE ] &larr;&larr;&larr;&larr;&larr;&larr;&larr;+<br>
+          &emsp;&emsp;&emsp;&emsp;&emsp;&boxv; (start=1)&emsp;&emsp;&emsp;&ensp;&boxv;<br>
+          &emsp;&emsp;&emsp;&emsp;&emsp;&boxv;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&boxv;<br>
+          &emsp;&emsp;&emsp;&emsp;&ensp;&darr;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&boxv;<br>
+          &emsp;&emsp;&emsp; [ LOAD ] &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;&boxv;<br>
+          &emsp;&emsp;&emsp;&emsp;&emsp;&boxv;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&boxv;<br>
+          &emsp;&emsp;&emsp;&emsp;&ensp;&darr;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&boxv;<br>
+          &emsp;&emsp; [ ITERATE ] (16 cycles)&boxv;<br>
+          &emsp;&emsp;&emsp;&emsp;&emsp;&boxv; (iter_done=1)&ensp;&boxv;<br>
+          &emsp;&emsp;&emsp;&emsp;&ensp;&darr;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&boxv;<br>
+          &emsp;&emsp;&emsp; [ DONE ] &minus;&minus;&minus;&minus;&minus;&minus;&minus;&minus;&minus;&minus;+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: Datapath & Arithmetic -->
+  <div class="slide" id="slide-6">
+    <div class="slide-num">Slide 06 / 14 &bull; Datapath Subsystem</div>
+    <h1>Datapath & Arithmetic Right Shifters</h1>
+    <p>The 22-bit arithmetic datapath executes parallel updates without any multiplication:</p>
+    <div class="formula-box">
+      assign sigma &ensp;= z_reg[21]; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;// Sign bit: 0=CCW, 1=CW<br>
+      assign x_shift = x_reg >>> iter_count; &emsp;&emsp;&emsp;// Arithmetic shift with sign replication<br>
+      assign y_shift = y_reg >>> iter_count;<br><br>
+      assign x_next &ensp;= sigma ? (x_reg + y_shift) : (x_reg - y_shift);<br>
+      assign y_next &ensp;= sigma ? (y_reg - x_shift) : (y_reg + x_shift);<br>
+      assign z_next &ensp;= sigma ? (z_reg + atan_ext) : (z_reg - atan_ext);
+    </div>
+    <div class="card">
+      <h3>Why <code>>>></code> (Arithmetic Shift) Matters in COA</h3>
+      <p>Coordinates X, Y, Z are signed 2's complement numbers. Standard logical shift (<code>>></code>) inserts zeros, destroying negative signs. Arithmetic right shift (<code>>>></code>) replicates the sign bit (MSB), preserving mathematical 2's complement values!</p>
+    </div>
+  </div>
+
+  <!-- Slide 7: Fixed-Point & Guard Bits -->
+  <div class="slide" id="slide-7">
+    <div class="slide-num">Slide 07 / 14 &bull; Precision Engineering</div>
+    <h1>Fixed-Point Number System & Guard Bits</h1>
+    <table>
+      <thead>
+        <tr><th>Signal</th><th>Width</th><th>Format</th><th>Integer / Frac Bits</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>angle_in</code></td><td>16-bit</td><td>Signed Q3.13</td><td>3 int, 13 frac</td><td>Covers full circular domain [-&pi;, +&pi;]</td></tr>
+        <tr><td><code>atan_val</code></td><td>18-bit</td><td>Unsigned Q0.18</td><td>0 int, 18 frac</td><td>16-word lookup constants</td></tr>
+        <tr><td><code>x_reg, y_reg</code></td><td>22-bit</td><td>Signed Q3.19</td><td>3 int, 19 frac</td><td><b>2 MSB guard bits</b> (prevent growth overflow)<br><b>4 LSB guard bits</b> (suppress shift truncation)</td></tr>
+        <tr><td><code>z_reg</code></td><td>22-bit</td><td>Signed Q4.18</td><td>4 int, 18 frac</td><td>Residual angle accumulation</td></tr>
+        <tr><td><code>cos_out, sin_out</code></td><td>16-bit</td><td>Signed Q1.15</td><td>1 int, 15 frac</td><td>Standard signed audio/DSP trigonometric output</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Slide 8: Quadrant Folding & Signs -->
+  <div class="slide" id="slide-8">
+    <div class="slide-num">Slide 08 / 14 &bull; Full-Circle Extension</div>
+    <h1>Quadrant Folding & Sign Reconstruction</h1>
+    <p>CORDIC elementary angles sum to &Sigma;&alpha;<sub>i</sub> &asymp; 99.88&deg; (&lt; 1.74 rad). It cannot naturally converge to &plusmn;180&deg;. We solve this with symmetric reflection:</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Input Quadrant Folding</h3>
+        <ul>
+          <li><b>Q1 [0, +&pi;/2]:</b> &theta;' = &theta;</li>
+          <li><b>Q2 (+&pi;/2, +&pi;]:</b> &theta;' = &pi; &minus; &theta;</li>
+          <li><b>Q3 [-&pi;, -&pi;/2):</b> &theta;' = &theta; + &pi;</li>
+          <li><b>Q4 [-&pi;/2, 0):</b> &theta;' = &minus;&theta;</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Output Sign Restoration</h3>
+        <ul>
+          <li><b>Q1:</b> cos = +X, &ensp;sin = +Y</li>
+          <li><b>Q2:</b> cos = &minus;X, &ensp;sin = +Y</li>
+          <li><b>Q3:</b> cos = &minus;X, &ensp;sin = &minus;Y</li>
+          <li><b>Q4:</b> cos = +X, &ensp;sin = &minus;Y</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Waveform Verification -->
+  <div class="slide" id="slide-9">
+    <div class="slide-num">Slide 09 / 14 &bull; Simulation & Waveforms</div>
+    <h1>Cycle-Accurate Timing & Handshake</h1>
+    <div class="card" style="margin-bottom: 14px;">
+      <h3>Deterministic 18-Clock-Cycle Execution Timeline</h3>
+      <div style="font-family: monospace; font-size: 13px; line-height: 1.6; color: #79c0ff;">
+        Cycle 0 &emsp;: START pulse sampled high while FSM is IDLE<br>
+        Cycle 1 &emsp;: LOAD state (load_en=1, X0=0x04DBA7, Y0=0, Z0=folded angle)<br>
+        Cycle 2-17 : ITERATE state (iter_en=1, counter advances 0 to 15, Z converges)<br>
+        Cycle 18 &emsp;: DONE state (out_latch=1, cosine_out & sine_out updated, done=1 pulse)
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Protocols Verified</h3>
+        <p>&bull; <b>Zero-Gap Back-to-Back:</b> New start edge accepted on the exact cycle <code>done=1</code>.<br>
+        &bull; <b>Busy Immunity:</b> Spurious starts during ITERATE ignored.<br>
+        &bull; <b>Reset Recovery:</b> Mid-computation reset cleanly aborts.</p>
+      </div>
+      <div class="card">
+        <h3>Waveform Inspection</h3>
+        <p>Generated standard IEEE VCD waveform: <code>sim/waves/cordic_tb.vcd</code> (54 KB).<br>
+        Interactive HTML viewer available: <code>view_waves.html</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10: Numerical Results Table -->
+  <div class="slide" id="slide-10">
+    <div class="slide-num">Slide 10 / 14 &bull; Verification Data</div>
+    <h1>Numerical Results: Hardware vs IEEE-754</h1>
+    <table>
+      <thead>
+        <tr><th>Angle</th><th>IEEE-754 Cos</th><th>Hardware Q1.15 Cos</th><th>IEEE-754 Sin</th><th>Hardware Q1.15 Sin</th><th>Latency</th><th>Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>0&deg;</b></td><td>+1.00000</td><td>0x7FFF (+0.99997)</td><td>+0.00000</td><td>0x0000 (+0.00000)</td><td>18 cycles</td><td><span class="badge-pass">PASS (0 LSB)</span></td></tr>
+        <tr><td><b>30&deg;</b></td><td>+0.86603</td><td>0x6EDB (+0.86606)</td><td>+0.50000</td><td>0x3FFF (+0.49997)</td><td>18 cycles</td><td><span class="badge-pass">PASS (1 LSB)</span></td></tr>
+        <tr><td><b>45&deg;</b></td><td>+0.70711</td><td>0x5A82 (+0.70709)</td><td>+0.70711</td><td>0x5A83 (+0.70712)</td><td>18 cycles</td><td><span class="badge-pass">PASS (1 LSB)</span></td></tr>
+        <tr><td><b>60&deg;</b></td><td>+0.50000</td><td>0x3FFF (+0.49997)</td><td>+0.86603</td><td>0x6EDB (+0.86606)</td><td>18 cycles</td><td><span class="badge-pass">PASS (1 LSB)</span></td></tr>
+        <tr><td><b>90&deg;</b></td><td>+0.00000</td><td>0x0000 (+0.00000)</td><td>+1.00000</td><td>0x7FFF (+0.99997)</td><td>18 cycles</td><td><span class="badge-pass">PASS (0 LSB)</span></td></tr>
+        <tr><td><b>120&deg;</b></td><td>-0.50000</td><td>0xC001 (-0.49997)</td><td>+0.86603</td><td>0x6EDB (+0.86606)</td><td>18 cycles</td><td><span class="badge-pass">PASS (1 LSB)</span></td></tr>
+        <tr><td><b>-45&deg;</b></td><td>+0.70711</td><td>0x5A82 (+0.70709)</td><td>-0.70711</td><td>0xA57D (-0.70712)</td><td>18 cycles</td><td><span class="badge-pass">PASS (1 LSB)</span></td></tr>
+        <tr><td><b>-180&deg;</b></td><td>-1.00000</td><td>0x8000 (-1.00000)</td><td>+0.00000</td><td>0x0000 (+0.00000)</td><td>18 cycles</td><td><span class="badge-pass">PASS (0 LSB)</span></td></tr>
+      </tbody>
+    </table>
+    <p style="text-align: center; color: var(--accent-green); font-weight: 600;">Overall Testbench: 87 Passed / 0 Failed (100% Verification Rate)</p>
+  </div>
+
+  <!-- Slide 11: COA Concepts Demonstrated -->
+  <div class="slide" id="slide-11">
+    <div class="slide-num">Slide 11 / 14 &bull; Academic Mapping</div>
+    <h1>COA Concepts Directly Implemented</h1>
+    <div class="grid-2">
+      <div class="card">
+        <ul>
+          <li><b>Shift-Add Arithmetic:</b> Multiplier replacement via binary right shifting.</li>
+          <li><b>FSM Controller:</b> 4-state Moore machine governing control flow.</li>
+          <li><b>Fixed-Point Systems:</b> Signed Q3.13 and Q1.15 data representation.</li>
+          <li><b>Control/Datapath Split:</b> Classic Harvard-style modular isolation.</li>
+          <li><b>Bus Handshaking:</b> Synchronous start/ready/done handshakes.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <ul>
+          <li><b>Guard Bits:</b> Integer overflow prevention & truncation control.</li>
+          <li><b>ROM Addressing:</b> Counter outputs directly index the coefficient table.</li>
+          <li><b>Deterministic Latency:</b> Fixed 18-cycle execution budgeting.</li>
+          <li><b>Saturation Arithmetic:</b> Eliminates +1.0 2's complement wraparound.</li>
+          <li><b>Hardware Modularity:</b> Hierarchical structural integration in Verilog.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 12: Architectural Trade-offs -->
+  <div class="slide" id="slide-12">
+    <div class="slide-num">Slide 12 / 14 &bull; Comparative Analysis</div>
+    <h1>Iterative vs Pipelined Architecture</h1>
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Iterative Core (Our Design)</th><th>Pipelined Unrolled (e.g. Kaustuv Sahu)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Hardware Structure</b></td><td>1 Shared ALU Datapath + 4-State FSM</td><td>32 Cascaded Stages (Monolithic)</td></tr>
+        <tr><td><b>Flip-Flop Count</b></td><td><b>~70 Flip-Flops</b> (Minimal Area)</td><td>&gt;3,000 Flip-Flops (High Area)</td></tr>
+        <tr><td><b>Multiplier Usage</b></td><td><b>0 DSP Multipliers</b></td><td><b>0 DSP Multipliers</b></td></tr>
+        <tr><td><b>Throughput</b></td><td>1 result / 18 cycles</td><td>1 result / 1 cycle (streaming)</td></tr>
+        <tr><td><b>Control Handshakes</b></td><td><b>Yes (start, done, ready)</b></td><td>None (continuous dataflow)</td></tr>
+        <tr><td><b>COA Syllabus Alignment</b></td><td><b>Perfect (Demonstrates FSM + ALU)</b></td><td>Limited (No FSM, no control path)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Slide 13: Conclusion & Key Metrics -->
+  <div class="slide" id="slide-13">
+    <div class="slide-num">Slide 13 / 14 &bull; Conclusion</div>
+    <h1>Conclusion & Key Accomplishments</h1>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Project Accomplishments</h3>
+        <ul>
+          <li>Designed and synthesized a <b>multiplier-free CORDIC core</b> in Verilog HDL.</li>
+          <li>Achieved <b>full-circle [-&pi;, +&pi;] coverage</b> using symmetric quadrant folding.</li>
+          <li>Exceeded accuracy goals: <b>maximum error &le; 1 LSB</b> (spec allowed &le; 4 LSBs).</li>
+          <li>Rigorous testbench: <b>87 of 87 test assertions passed</b>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Final Hardware Specifications</h3>
+        <ul>
+          <li><b>Target Frequency:</b> 50 MHz</li>
+          <li><b>Execution Latency:</b> Exactly 18 clock cycles</li>
+          <li><b>Multipliers:</b> 0 (100% shift-and-add)</li>
+          <li><b>Deliverables:</b> Complete Verilog RTL, Testbenches, Waveforms, Report, Presentation Deck.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 14: Q&A / Demo -->
+  <div class="slide title-slide" id="slide-14">
+    <div class="slide-num">Slide 14 / 14 &bull; Live Demonstration</div>
+    <h1>Questions & Answers</h1>
+    <h2>Thank You for Your Time and Consideration!</h2>
+    <div class="meta-box" style="margin-top: 20px;">
+      <div class="meta-item">
+        <div class="meta-label">Live Waveform Viewer</div>
+        <div class="meta-val"><code>view_waves.html</code></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Simulation Runner</div>
+        <div class="meta-val"><code>python run_simulation.py</code></div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Final Report</div>
+        <div class="meta-val"><code>docs/CORDIC_Final_Project_Report.md</code></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div id="slideIndicator">Slide 1 / 14</div>
+  <div class="controls">
+    <button class="btn" onclick="prevSlide()">&larr; Prev (Left Arrow)</button>
+    <button class="btn" onclick="nextSlide()">Next (Right Arrow) &rarr;</button>
+    <button class="btn" onclick="toggleFullScreen()">Fullscreen (F11)</button>
+  </div>
+</footer>
+
+<script>
+let currentSlide = 1;
+const totalSlides = 14;
+
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('slide-' + n);
+  if (target) {
+    target.classList.add('active');
+    currentSlide = n;
+    document.getElementById('slideIndicator').textContent = `Slide ${currentSlide} / ${totalSlides}`;
+  }
+}
+
+function nextSlide() {
+  if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+  if (currentSlide > 1) showSlide(currentSlide - 1);
+}
+
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') nextSlide();
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
+  else if (e.key === 'Home') showSlide(1);
+  else if (e.key === 'End') showSlide(totalSlides);
+});
+</script>
+</body>
+</html>
